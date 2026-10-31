@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartCanteen - Queue & Food Ordering System</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-logo">
+                🍱 SmartCanteen <span class="logo-badge">College Hackathon</span>
+            </a>
+            <div class="nav-links">
+                <button class="nav-btn" onclick="document.getElementById('menuSection').scrollIntoView({ behavior: 'smooth' })">
+                    📋 Food Menu
+                </button>
+                <button class="nav-btn" onclick="openTrackingModal()">
+                    📍 Track Order
+                </button>
+                <button class="nav-btn" onclick="openHistoryModal()">
+                    📜 Order History
+                </button>
+                <button class="nav-btn cart-btn" onclick="toggleCartDrawer(true)">
+                    🛒 Cart <span class="cart-badge" id="cartBadge">0</span>
+                </button>
+                <a href="/admin.html" class="nav-btn admin-link" title="Open Kitchen & Admin Dashboard">
+                    👨‍🍳 Admin / KDS &rarr;
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="main-content">
+
+        <!-- Active Order Quick Resume Banner (if any) -->
+        <div id="quickTrackBanner" style="display: none; background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; padding: 10px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem;">
+        </div>
+
+        <!-- Hero Section -->
+        <section class="hero">
+            <h1>Smart Canteen Queue & Food Ordering System</h1>
+            <p>
+                Skip long counter lines! Order your favorite canteen breakfast, snacks, and meals online, monitor your live queue position, and collect your food right when it's hot.
+            </p>
+            <div class="hero-stats">
+                <div class="hero-pill">⚡ Live Queue Tracking</div>
+                <div class="hero-pill">🧠 Smart Wait-Time Estimator</div>
+                <div class="hero-pill">💵 Counter Cash & Demo UPI</div>
+                <div class="hero-pill">🍱 Fresh & Hot Campus Meals</div>
+            </div>
+        </section>
+
+        <!-- Menu Section -->
+        <section id="menuSection">
+            <div class="menu-controls">
+                <div class="categories-bar" id="categoriesBar">
+                    <button class="filter-btn active">All</button>
+                </div>
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Search dosa, rolls, coffee, thali...">
+                </div>
+            </div>
+
+            <!-- Food Grid -->
+            <div class="food-grid" id="foodGrid">
+                <!-- Dynamically populated by app.js -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Slide-over Cart Drawer -->
+    <div class="drawer-overlay" id="cartDrawerOverlay" onclick="toggleCartDrawer(false)"></div>
+    <aside class="cart-drawer" id="cartDrawer">
+        <div class="drawer-header">
+            <h2>🛒 Your Food Cart</h2>
+            <button class="close-btn" onclick="toggleCartDrawer(false)">&times;</button>
+        </div>
+
+        <div class="drawer-body">
+            <!-- Items in Cart -->
+            <div id="cartDrawerItems"></div>
+
+            <!-- Checkout Details Form -->
+            <form id="checkoutForm" class="checkout-section" onsubmit="handleCheckoutSubmit(event)">
+                <h3>Student & Delivery Details</h3>
+
+                <div class="form-group">
+                    <label>Your Full Name *</label>
+                    <input type="text" id="custName" placeholder="e.g. Rahul Sharma" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Mobile Number *</label>
+                    <input type="tel" id="custPhone" placeholder="e.g. 9876543210" pattern="[0-9]{7,15}" required>
+                </div>
+
+                <div class="form-group">
+                    <label>College Roll / Student ID (Optional)</label>
+                    <input type="text" id="custRoll" placeholder="e.g. CS2026-042">
+                </div>
+
+                <div class="form-group">
+                    <label>Kitchen Notes (Optional)</label>
+                    <textarea id="custNotes" rows="2" placeholder="e.g. Extra spicy, no onions, pack separately"></textarea>
+                </div>
+
+                <!-- Payment Options -->
+                <div class="form-group">
+                    <label>Select Payment Method *</label>
+                    <div class="payment-selector">
+                        <label class="payment-card-opt selected">
+                            <input type="radio" name="paymentMethod" value="CASH" checked>
+                            <div>
+                                <strong>💵 Cash at Counter</strong>
+                                <div class="payment-desc">Pay when you pick up your hot food from the canteen desk.</div>
+                            </div>
+                        </label>
+                        <label class="payment-card-opt">
+                            <input type="radio" name="paymentMethod" value="DEMO_ONLINE">
+                            <div>
+                                <strong>💳 Simulated Demo Payment <span class="demo-tag">HACKATHON DEMO</span></strong>
+                                <div class="payment-desc">Instantly simulated online UPI/Card payment for presentation testing.</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Demo payment disclaimer note -->
+                <div id="demoPaymentDetails" style="display: none; background: #fffbeb; border: 1px solid #fde68a; color: #92400e; padding: 10px; border-radius: 6px; font-size: 0.8rem; margin-top: 8px;">
+                    ℹ️ <strong>Simulated Payment Notice:</strong> This is a college demonstration feature. No real money or bank credentials are required or processed.
+                </div>
+            </form>
+        </div>
+
+        <div class="drawer-footer">
+            <div class="total-row">
+                <span class="total-label">Subtotal Total:</span>
+                <span class="total-value" id="cartTotalValue">₹0.00</span>
+            </div>
+            <button type="submit" form="checkoutForm" class="checkout-btn" id="checkoutSubmitBtn">
+                ⚡ Place Order Now
+            </button>
+        </div>
+    </aside>
+
+    <!-- Order Confirmation Modal -->
+    <div class="modal-overlay" id="confirmationModal">
+        <div class="modal-card" style="max-width: 480px; text-align: center;">
+            <div class="modal-header" style="justify-content: center; background: #dcfce7; border-bottom-color: #bbf7d0;">
+                <h2 style="color: #15803d;">🎉 Order Placed Successfully!</h2>
+            </div>
+            <div class="modal-body">
+                <p style="color: var(--text-muted); font-size: 0.95rem;">
+                    Your food request has been sent to the kitchen. Show your order number at the counter when ready.
+                </p>
+
+                <div style="background: #f8fafc; border: 2px dashed #93c5fd; border-radius: 12px; padding: 18px; margin: 18px 0;">
+                    <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Order Token Number</div>
+                    <div style="font-size: 1.8rem; font-weight: 900; color: var(--primary);" id="confOrderNumber">SC-0000</div>
+                    <div style="margin-top: 6px; font-size: 0.9rem;">
+                        Amount: <strong id="confTotal">₹0.00</strong> | <span id="confPaymentMethod">Cash</span>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-around; margin-bottom: 20px;">
+                    <div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">QUEUE POSITION</div>
+                        <div style="font-size: 1.3rem; font-weight: 800; color: var(--primary-dark);" id="confQueuePos">#1</div>
+                    </div>
+                    <div style="width: 1px; background: var(--border);"></div>
+                    <div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">ESTIMATED WAIT</div>
+                        <div style="font-size: 1.3rem; font-weight: 800; color: #047857;" id="confWaitTime">~5 mins</div>
+                    </div>
+                </div>
+
+                <button class="checkout-btn" onclick="openTrackingModal(document.getElementById('confOrderNumber').textContent)">
+                    📍 Open Live Order Tracker &rarr;
+                </button>
+                <button class="nav-btn" style="margin-top: 10px; width: 100%; justify-content: center;" onclick="closeConfirmationModal()">
+                    Back to Canteen Menu
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Order Tracking Modal -->
+    <div class="modal-overlay" id="trackingModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>📍 Live Queue & Kitchen Tracker</h2>
+                <button class="close-btn" onclick="closeTrackingModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Search by Order Number Form -->
+                <form onsubmit="handleManualTrackSubmit(event)" style="display: flex; gap: 8px; margin-bottom: 20px;">
+                    <input type="text" id="trackingOrderInput" placeholder="Enter Order # (e.g. SC-20261020-0001)" style="flex: 1; padding: 10px 14px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem;" required>
+                    <button type="submit" class="add-btn" style="padding: 0 18px;">Track</button>
+                </form>
+
+                <!-- Dynamic Tracking Content Area -->
+                <div id="trackingContentArea">
+                    <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                        Enter your order number above to track live preparation status and queue position.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order History Modal -->
+    <div class="modal-overlay" id="historyModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>📜 Student Order History</h2>
+                <button class="close-btn" onclick="closeHistoryModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+                    <input type="text" id="historySearchInput" placeholder="Enter Mobile Number or Roll Number" style="flex: 1; padding: 9px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem;">
+                    <button class="add-btn" onclick="searchOrderHistory()">Search</button>
+                </div>
+                <div id="historyResults">
+                    <div style="text-align: center; padding: 24px; color: var(--text-muted);">
+                        Enter your phone number or student roll number to view previous orders.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Scripts -->
+    <script src="/js/app.js"></script>
+</body>
+</html>

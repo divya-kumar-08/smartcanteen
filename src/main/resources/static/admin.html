@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartCanteen - Kitchen & Admin Portal</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+    <!-- Admin Navigation Bar -->
+    <header class="navbar" style="border-bottom: 2px solid var(--primary);">
+        <div class="nav-container">
+            <a href="/admin.html" class="nav-logo">
+                👨‍🍳 SmartCanteen <span class="logo-badge" style="background: #fef3c7; color: #b45309;">Kitchen & Admin KDS</span>
+            </a>
+            <div class="nav-links">
+                <a href="/" class="nav-btn" style="background: #f1f5f9; border: 1px solid var(--border);">
+                    &larr; Back to Student Menu
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Admin Content Area -->
+    <main class="main-content">
+
+        <!-- College Hackathon Demo Notice Banner -->
+        <div class="admin-banner">
+            <span>⚠️</span>
+            <div>
+                <strong>Demonstration Kitchen & Admin Portal:</strong> This interface is built for college hackathon presentation and demonstration purposes. It provides full control over active kitchen orders, real-time status transitions, and menu items.
+            </div>
+        </div>
+
+        <!-- Dashboard KPI Metric Cards -->
+        <section class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-card-title">Gross Sales (₹)</div>
+                <div class="kpi-card-num" style="color: #047857;" id="statRevenue">₹0.00</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-card-title">Active Orders</div>
+                <div class="kpi-card-num" style="color: var(--primary);" id="statActiveOrders">0</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-card-title">In Kitchen Prep</div>
+                <div class="kpi-card-num" style="color: var(--warning);" id="statPreparingOrders">0</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-card-title">Ready for Pickup</div>
+                <div class="kpi-card-num" style="color: var(--success);" id="statReadyOrders">0</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-card-title">Completed Orders</div>
+                <div class="kpi-card-num" style="color: #475569;" id="statCompletedOrders">0</div>
+            </div>
+        </section>
+
+        <!-- Admin Control Tabs & Refresh Option -->
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+            <div class="admin-tabs" style="margin-bottom: 0;">
+                <button class="admin-tab-btn active" id="tabBtn-kitchen" onclick="switchAdminTab('kitchen')">
+                    🍳 Kitchen Display (Active Orders)
+                </button>
+                <button class="admin-tab-btn" id="tabBtn-menu" onclick="switchAdminTab('menu')">
+                    🍱 Food Menu Management
+                </button>
+                <button class="admin-tab-btn" id="tabBtn-orders" onclick="switchAdminTab('orders')">
+                    📜 Order History Records
+                </button>
+            </div>
+
+            <label style="font-size: 0.85rem; color: var(--text-muted); display: inline-flex; align-items: center; gap: 6px; cursor: pointer;">
+                <input type="checkbox" id="autoRefreshCheck" checked>
+                <span>🔄 Live Auto-refresh (5s)</span>
+            </label>
+        </div>
+
+        <!-- TAB 1: KITCHEN DISPLAY SYSTEM (Active & Incoming Orders) -->
+        <div id="tabPane-kitchen" class="tab-content-pane">
+            <div style="overflow-x: auto;">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Order #</th>
+                            <th>Student Customer</th>
+                            <th>Items & Quantities</th>
+                            <th>Payment Status</th>
+                            <th>Status & Wait</th>
+                            <th>Kitchen Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="kitchenOrdersList">
+                        <!-- Loaded dynamically via admin.js -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB 2: MENU MANAGEMENT -->
+        <div id="tabPane-menu" class="tab-content-pane" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="font-size: 1.1rem; font-weight: 700;">All Canteen Menu Items</h3>
+                <button class="add-btn" onclick="openAddMenuItemModal()">+ Add New Food Item</button>
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Item Name & Description</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Stock Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminMenuList">
+                        <!-- Loaded dynamically via admin.js -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB 3: ORDER HISTORY RECORDS -->
+        <div id="tabPane-orders" class="tab-content-pane" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="font-size: 1.1rem; font-weight: 700;">Full Canteen Order Log</h3>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <label style="font-size: 0.85rem; color: var(--text-muted);">Filter by Status:</label>
+                    <select id="historyStatusFilter" onchange="loadAllOrders()" style="padding: 6px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.85rem;">
+                        <option value="ALL">All Statuses</option>
+                        <option value="PLACED">Placed</option>
+                        <option value="PREPARING">Preparing</option>
+                        <option value="READY">Ready for Pickup</option>
+                        <option value="COMPLETED">Completed</option>
+                        <option value="CANCELLED">Cancelled</option>
+                    </select>
+                </div>
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Order #</th>
+                            <th>Date & Time</th>
+                            <th>Customer</th>
+                            <th>Items Summary</th>
+                            <th>Total</th>
+                            <th>Payment</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="allOrdersList">
+                        <!-- Loaded dynamically via admin.js -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Add / Edit Menu Item Modal -->
+    <div class="modal-overlay" id="menuItemModal">
+        <div class="modal-card" style="max-width: 520px;">
+            <div class="modal-header">
+                <h2 id="menuModalTitle">Add New Menu Item</h2>
+                <button class="close-btn" onclick="closeMenuItemModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="menuItemForm" onsubmit="handleMenuItemSubmit(event)">
+                    <div class="form-group">
+                        <label>Item Name *</label>
+                        <input type="text" id="itemModalName" placeholder="e.g. Masala Dosa" required>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div class="form-group">
+                            <label>Category *</label>
+                            <input type="text" id="itemModalCategory" placeholder="e.g. Breakfast" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Price (₹) *</label>
+                            <input type="number" id="itemModalPrice" step="0.5" min="1" placeholder="60.00" required>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div class="form-group">
+                            <label>Prep Time (Minutes) *</label>
+                            <input type="number" id="itemModalPrep" min="1" max="60" value="5" required>
+                        </div>
+                        <div class="form-group" style="display: flex; align-items: center; margin-top: 24px;">
+                            <label style="cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+                                <input type="checkbox" id="itemModalAvailable" checked>
+                                <span style="font-weight: 600; text-transform: none;">Available in Stock</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Image URL (Optional)</label>
+                        <input type="url" id="itemModalImage" placeholder="https://images.unsplash.com/photo-...">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="itemModalDesc" rows="3" placeholder="Crispy golden crepe with spiced potato filling..."></textarea>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button type="submit" class="checkout-btn" style="flex: 1;">Save Menu Item</button>
+                        <button type="button" class="nav-btn" style="border: 1px solid var(--border);" onclick="closeMenuItemModal()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Notification Toast Container -->
+    <div class="toast-container" id="adminToastContainer"></div>
+
+    <script src="/js/admin.js"></script>
+</body>
+</html>
